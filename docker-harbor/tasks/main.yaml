@@ -1,0 +1,29 @@
+- name: Create workdirectory
+  file: 
+    path: /opt/{{ item }}
+    state: directory
+    mode: 0755
+  with_items:
+    - docker-harbor/ssl
+    - docker-harbor/data
+- name: Download harbor-offline-installer package
+  unarchive:
+          #src: https://github.com/goharbor/harbor/releases/download/v2.2.3/harbor-offline-installer-v2.2.3.tgz
+    src: /root/ansible-playbook/roles/docker-harbor/files/harbor-offline-installer-v2.2.3.tgz
+    dest: /opt/docker-harbor
+    remote_src: yes
+- name: Upload files to workdirectory
+  copy: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: u+rw,g-wx,o-rwx
+  with_items:
+    - {src: server.pem, dest: /opt/docker-harbor/ssl }
+    - {src: server.key, dest: /opt/docker-harbor/ssl }
+    - {src: harbor.yml, dest: /opt/docker-harbor/harbor }
+- name: Install docker-compose
+  shell: curl -L https://github.com/docker/compose/releases/download/1.20.0/docker-compose-`uname -s`-`uname -m` -o /usr/bin/docker-compose  && chmod +x /usr/bin/docker-compose
+- name: Deploy docker-harbor
+  shell: ./prepare && ./install.sh
+  args:
+    chdir: /opt/docker-harbor/harbor

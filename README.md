@@ -1,0 +1,1 @@
+Even if docker-habor is configured for tls encryption, it is necessary to add a trusted private registory to the docker daemon, otherwise it will report an error that the certificate authority is not trusted.
